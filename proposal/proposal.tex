@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage{nips15submit_e,times}
+\usepackage{amssymb}
+
+\title{Deep Convolutional Value Networks for Arimaa}
+
+\author{
+Alan J. Zaffetti\thanks{B.S. Computer Science} \\
+Department of Computer Science\\
+University of Massachusetts Amherst\\
+Amherst, MA 01003 \\
+\texttt{azaffett@umass.edu} \\
+}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Arimaa is an abstract strategy game with a small, but loyal community.  Invented in 2002 by Omar Syed, the chess variant was designed to be intuitive for humans to learn, but difficult for computers to beat.  Syed challenged the AI community to develop a World Champion program and further the state of knoweldge about the game.  The challenge has been met and finally claimed by David Wu in April of 2015.  This paper increments on Wu's results by substituting his hand-tuned evaluation function for a convolutional neural network, learned from a collection of expert games.  Given positional features as input, the network will output the goodness score for one side.  It hopes to serve as a proof-of-concept and eventually further the state-of-art in Arimaa playing strength.
+\end{abstract}
+
+\section{Data Sets}
+
+Arimaa.com game room \cite{arimaa_com} offers an archive \cite{games} of all games played on their servers.  These include casual, rated, and tornament games for all users mothly from 2002-2016.  I will use a subset of this data (minimum ELO rating 1800 and above) amounting to tens of thousands of game positions.  Arimaa.com also offers a dataset of `win in two move' puzzles \cite{puzzles}, and I propose a method for extracting more.  Data is in tab-delineated CSV, and game data is in move list form.  These games require preprocessing to extract the key positions from them.
+
+\section{Problem}
+
+Can we train a convolutional neural network to learn a function $f: \mathbb{R}^D\rightarrow \mathbb{R}$ to determine the goodness of a position for one side? How reliably do CNN evaluators determine the outcome of an Arimaa game?  These are the machine learning inquiries I plan to address.
+
+\section{Methods}
+
+The data will need to be preprocessed, since it is stored as a list of moves.  I will do this by extracting key positions in FEN notation \cite{fen}, as the sole features, and game result (0 or 1) as the target.
+
+\begin{figure}[h]
+\begin{center}
+\texttt{RRRDDRRR/RHCEMCHR/8/8/8/8/rhcmechr/rrrddrrr 2g}
+\end{center}
+\caption{An example FEN position string.}
+\end{figure}
+
+Parallel data preprocessing will be implemented via Apache Spark \cite{spark}.  I will then fit a multi-layer convolutional nerual network regressor in Python, making the proper transformations into the desired input shape.  I will be using the software libraries Theano \cite{theano}, and nolearn.lasagne \cite{nolearn_lasagne} to design and train the network.
+
+\section{Experiments}
+
+I will evaluate my model using $k$-fold cross-validation of mean accuracy values.  I will break down accuracy results  into move-by-move statistics.  That is, I will plot my model on sample positions achieved after $k$ moves, $k+1$ moves, ($k+2$ moves, etc).  This will allow me to vet and visualize my model for stage-wise performance (i.e. opening, middle-game, end-game).  I will produce a plot showing how well my model can predict the `win in $2$,' and `win in $k$' puzzles.
+
+\section{Related Work}
+
+Related work includes David Wu's original paper \cite{wu}, which I cite for the description of Arimaa, and his work developing a World Champion Arimaa program.  I will compare my results to an earlier thesis paper by Hrebejk \cite{Hrebejk} on evaluator learning in Arimaa as a baseline for comparison.  Oshri, Khandwala \cite{Oshri_Khandwala} is also relevant for its board to input image transformation for the CNN.
+
+\begin{thebibliography}{9}
+
+\bibitem{arimaa_com}
+Arimaa Gameroom;
+\textit{http://arimaa.com};
+2002-2016.
+
+\bibitem{games}
+Arimaa Games Archive;
+\textit{http://arimaa.com/arimaa};
+2002-2016.
+
+\bibitem{puzzles}
+Arimaa `Win in 2' puzzles;
+\textit{http://arimaa.com/arimaa};
+2002-2016.
+
+\bibitem{fen}
+Forsyth--Edwards Notation;
+\textit{https://en.wikipedia.org/wiki/};
+2016.
+
+\bibitem{spark}
+Apache Spark;
+\textit{https://spark.apache.org};
+2016.
+
+\bibitem{theano}
+Theano;
+\textit{http://deeplearning.net/software/theano/};
+2016.
+
+\bibitem{nolearn_lasagne}
+Nolearn.lasagne;
+\textit{https://pythonhosted.org/nolearn/lasagne.html}
+2016.
+
+\bibitem{wu}
+Wu, David J. (March 2015).
+Designing a Winning Arimaa Program.
+ICGA Journal.
+
+\bibitem{Hrebejk}
+Hrebejk, T. (2013). Arimaa challenge - static evaluation function. M.Sc. thesis, Charles University, Prague.
+
+\bibitem{Oshri_Khandwala}
+Oshri, Barak. Khandwala, Nishith. (2015).  Predicting Moves in Chess using Convolutional Neural Networks.  Stanford University.
+
+\end{thebibliography}
+
+\end{document}
