@@ -7,7 +7,7 @@ import os
 
 output_fieldnames = 'id', 'height', 'label', 'features'
 max_height = 60
-num_games = 12014
+num_games = 37297 # old dataset was 12014
 
 
 def games():
@@ -74,44 +74,44 @@ def featdecode(text):
             feats.append(1 if c == '1' else -1)
     return feats
 
-if __name__ == '__main__':
-    # dump positions
-    # fn = os.path.join(settings['data-base'], 'pos_new.csv')
-    # writer = csv.writer(open(fn, 'w'), dialect='unix')
-    # writer.writerow(output_fieldnames)
-    # for i, (h, feats, label) in enumerate(rows(), 1):
-    #     writer.writerow((i, h, label, featencode(feats)))
-    #     if i % 1000 == 0:
-    #         print('%.2f%%' % ((100. * i) / (max_height*num_games)))
-
-    # for i, (h, feats, label) in enumerate(rows(), 1):
-    #     print(list(feats))
-    #     exit(0)
-
-    # v = [0, -1, 1]
-    # print(v)
-    # print(featencode(v))
-    # print(featdecode(featencode(v)))
-    # print()
-    #
-    # t = featencode(v)
-    # print(t)
-    # print(featdecode(t))
-    # print(featencode(featdecode(t)))
-
-    import numpy as np
-    v = '0203020205090N1213114121411C00c131O091E1D0P1~z190T'
-    print(v)
-    print(np.array(featdecode(v)).reshape((6, 8, 8)))
-
-    #
-    # import numpy as np
-    # print(np.array(featdecode(v)))
-    # print(len(featdecode(v)))
-
-    # x = [-1, 0, -1, -1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, -1, 0, 0, -1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    # z = featencode(x)
-    # print(z)
-    # print("0200300811Y131030511B0F1Q1E1D0~m0~7031")
-    # print(x)
-    # print(featdecode(z))
+# if __name__ == '__main__':
+#     # dump positions
+#     # fn = os.path.join(settings['data-base'], 'positions2.csv')
+#     # writer = csv.writer(open(fn, 'w'), dialect='unix')
+#     # writer.writerow(output_fieldnames)
+#     # for i, (h, feats, label) in enumerate(rows(), 1):
+#     #     writer.writerow((i, h, label, featencode(feats)))
+#     #     if i % 1000 == 0:
+#     #         print('%.2f%%' % ((100. * i) / (max_height*num_games)))
+#
+#     # for i, (h, feats, label) in enumerate(rows(), 1):
+#     #     print(list(feats))
+#     #     exit(0)
+#
+#     # v = [0, -1, 1]
+#     # print(v)
+#     # print(featencode(v))
+#     # print(featdecode(featencode(v)))
+#     # print()
+#     #
+#     # t = featencode(v)
+#     # print(t)
+#     # print(featdecode(t))
+#     # print(featencode(featdecode(t)))
+#
+#     # import numpy as np
+#     # v = '0203020205090N1213114121411C00c131O091E1D0P1~z190T'
+#     # print(v)
+#     # print(np.array(featdecode(v)).reshape((6, 8, 8)))
+#
+#     #
+#     # import numpy as np
+#     # print(np.array(featdecode(v)))
+#     # print(len(featdecode(v)))
+#
+#     # x = [-1, 0, -1, -1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, -1, 0, 0, -1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+#     # z = featencode(x)
+#     # print(z)
+#     # print("0200300811Y131030511B0F1Q1E1D0~m0~7031")
+#     # print(x)
+#     # print(featdecode(z))

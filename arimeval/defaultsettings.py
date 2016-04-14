@@ -2,5 +2,5 @@
 
 settings = {
   "data-base": "/path/to/data/",
-  "min-rating": 2000
+  "min-rating": 1800
 }

@@ -3,16 +3,16 @@ from arimeval.settings import settings
 import sklearn
 import numpy as np
 import sknn.mlp
+import pickle
 import csv
 import os
 
 
-def sigmoid_t(x):
+def lint(x):
     return int((int(x) + 1) / 2)
 
 
 if __name__ == '__main__':
-    rand = np.random.seed(0)
 
     print("initializing model...")
     mlp = sknn.mlp.Regressor(
@@ -20,9 +20,9 @@ if __name__ == '__main__':
             sknn.mlp.Convolution('Rectifier', channels=6, kernel_shape=(3, 3)),
             sknn.mlp.Layer('Rectifier'),
         ],
-        random_state=rand,
-        batch_size=max_height,
-        n_iter=5000,
+        random_state=0,
+        batch_size=1,
+        n_iter=5,
         n_stable=10,
         verbose=True,
     )
@@ -34,25 +34,25 @@ if __name__ == '__main__':
     # limit = 5000000000
     # cv = sklearn.cross_validation.KFold(limit, 10, shuffle=True, random_state=rand)
     print("reading data...")
-    feats = []
-    labels = []
+    rows = []
     for i, row in enumerate(reader):
-        feats.extend(featdecode(row[3]))
-        labels.append([sigmoid_t(row[2])])
-        if i % 1000 == 0:
+        rows.append((featdecode(row[3]), [lint(row[2])]))
+        if i % 100000 == 0:
             print(i)
             # if i > limit:
             #     break
 
-    # X_train, y_train, X_test, y_test = cv
-    # # danger shuffle does not work yet!
-    # print("shuffling data...")
-    # indices = np.array(list(range(len(feats))))
-    # np.random.shuffle(indices)
-    # for i, j in enumerate(indices):
-    #     feats[i], feats[j], labels[i], labels[j] = \
-    #         feats[j], feats[i], labels[j], labels[i]
+    print("shuffling data...")
+    np.random.shuffle(rows)
+
     print("reshaping data...")
+    feats = []
+    labels = []
+    for i, (f, l) in enumerate(rows):
+        feats.extend(f)
+        labels.append(l)
+        if i % 100000 == 0:
+            print(i)
     samples = len(feats) // 384
     X = np.array(feats).reshape((samples, 6, 8, 8))
     y = np.array(labels)
@@ -73,10 +73,13 @@ if __name__ == '__main__':
     # print(mlp.predict(x))
     # print(mlp.predict(x1))
 
-    print(mlp.get_parameters())
-    import json
-    fn = os.path.join(settings['data-base'], 'params.json')
-    json.dump(mlp.get_parameters(), open(fn, 'w'))
+    # print(mlp.get_parameters())
+    # print(mlp.get_parameters()[0])
+    # print(type(mlp.get_parameters()[0]))
+    # print(type(mlp.get_parameters()[0][0]))
+
+    fn = os.path.join(settings['data-base'], 'nn.pickle')
+    pickle.dump(mlp, open(fn, 'wb'))
 
 
 

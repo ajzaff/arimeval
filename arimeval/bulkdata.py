@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from arimeval.settings import settings
 import glob
 import csv
@@ -18,8 +20,8 @@ output_fieldnames = \
 
 def process(row, writer, rid):
     if row['id'] != 'id' and row['corrupt'] == '0' and \
-                    int(row['wrating']) >= settings['min-rating'] and \
-                    int(row['brating']) >= settings['min-rating'] and (
+            (int(row['wrating']) >= settings['min-rating'] and
+                    int(row['brating']) >= settings['min-rating']) and (
                     row['termination'] == 'g' or
                     row['termination'] == 'm'):
         writer.writerow(dict(zip(
@@ -31,21 +33,25 @@ def process(row, writer, rid):
 
 
 def main(argv):
+    print('size limit initialization...')
     csv.field_size_limit(1600000)
-    fn = os.path.join(settings['data-base'], 'games', '*.txt')
+    fn = os.path.join(settings['data-base'], 'GameData', '*.txt')
     games_glob = glob.glob(fn)
     fn = os.path.join(settings['data-base'], 'expert', 'expert.csv')
     games_writer = csv.DictWriter(open(fn, 'w'), output_fieldnames, dialect='unix')
     games_writer.writeheader()
     rid = 1
     for gl in games_glob:
-        with open(gl) as games_file:
+        print(gl, '...', end=' ')
+        with open(gl, encoding='utf-8') as games_file:
             games_reader = csv.DictReader(
                 games_file,
                 delimiter='\t',
                 fieldnames=input_fieldnames)
+            ri = rid
             for row in games_reader:
                 rid = process(row, games_writer, rid)
+            print('processed', rid - ri, 'games.')
 
 
 if __name__ == '__main__':
