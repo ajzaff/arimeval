@@ -7,8 +7,9 @@ class GameState(object):
 
     G = 0.6314442034
     Q = 1.447530126
-    MAX_SCORE = 12.09463655
-    MAX_SCORE2 = 24.1892731
+    MIN_SCORE = -4.018006466
+    MAX_SCORE = 14.94967009
+    RNG_SCORE = 18.96767656
 
     pieces = ('R', 'C', 'D', 'H', 'M', 'E')
     bb = ('R', 'C', 'D', 'H', 'M', 'E',
@@ -70,9 +71,15 @@ class GameState(object):
     def __str__(self):
         return self.boardstr(flippable=True)
 
-    def boardstr(self, flippable=True):
-        rankfunc = reversed if not flippable or self.turn() == 'g' else lambda r: r
-        filefunc = reversed if flippable and self.turn() == 's' else lambda f: f
+    def boardstr(self, flippable=True, side=None):
+        if not side:
+            side = self.turn()
+        rankfunc = reversed
+        if flippable and side in {'s', 'b'}:
+            rankfunc = lambda r: r
+        filefunc = lambda f: f
+        if flippable and side in {'s', 'b'}:
+            filefunc = reversed
         s = '%d%s\n +-----------------+\n' % (self.fullmove(), self.turn())
         for r in rankfunc(GameState.ranks):
             s += '%s| ' % r
@@ -197,10 +204,14 @@ class GameState(object):
     def npfeats(self):
         return np.array(list(self.features())).reshape((6, 8, 8))
 
-    def count(self, pieces):
+    def mask(self, pieces):
         bb = 0
         for p in pieces:
             bb |= self[p]
+        return bb
+
+    def count(self, pieces):
+        bb = self.mask(pieces)
         count = 0
         while bb > 0:
             bb &= (bb - 1)
@@ -210,35 +221,28 @@ class GameState(object):
     def harlog(self, side=None, normalize=True):
         if not side:
             side = self.turn()
-        hl = GameState.G
         gr = self.count('R')
         sr = self.count('r')
         gp = self.count('RCDHME')
         sp = self.count('rcdhme')
         if gp == 0:
             if side in {'g', 'w'}:
-                return -GameState.MAX_SCORE
+                return GameState.MIN_SCORE
             else:
                 return GameState.MAX_SCORE
         elif sp == 0:
             if side in {'g', 'w'}:
                 return GameState.MAX_SCORE
             else:
-                return -GameState.MAX_SCORE
-        hl *= np.log(gr * gp / (sr * sp)) if side in {'g', 'w'} else np.log(sr * sp / (gr * gp))
-        ps = 0
-        for i, piece in enumerate(self.pieces[1:], 2):
-            if side in {'s', 'b'}:
-                piece = piece.lower()
-            if self.count(piece) > 0:
-                s = ''.join(list(map(lambda s: s if side in {'s', 'b'} else s.lower(), GameState.pieces[i:])))
-                op = self.count(s)
-                cp = 1 if op == 0 else 0
-                ps += (1 + cp) / (GameState.Q + op)
-
-        hl *= ps
+                return GameState.MIN_SCORE
+        hl = GameState.G * np.log(gr * gp / (sr * sp))
+        for i in range(2, 6):
+            others = map(lambda s: s if side in {'s', 'b'} else s.lower(), GameState.pieces[i:])
+            op = self.count(others)
+            cp = 1 if op == 0 else 0
+            hl += (1 + cp) / (GameState.Q + op)
         if normalize:
-            hl = hl / GameState.MAX_SCORE2 + .5
+            hl = (hl - GameState.MIN_SCORE) / GameState.RNG_SCORE
         return hl
 
 

@@ -23,7 +23,9 @@ def process(row, writer, rid):
             (int(row['wrating']) >= settings['min-rating'] and
                     int(row['brating']) >= settings['min-rating']) and (
                     row['termination'] == 'g' or
-                    row['termination'] == 'm'):
+                    row['termination'] == 'm' or
+                    row['termination'] == 'e' or
+                    row['termination'] == 'r'):
         writer.writerow(dict(zip(
             output_fieldnames,
             (rid, row['id'], row['wrating'], row['brating'],
