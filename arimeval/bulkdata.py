@@ -19,13 +19,12 @@ output_fieldnames = \
 
 
 def process(row, writer, rid):
-    if row['id'] != 'id' and row['corrupt'] == '0' and \
-            (int(row['wrating']) >= settings['min-rating'] and
-                    int(row['brating']) >= settings['min-rating']) and (
-                    row['termination'] == 'g' or
-                    row['termination'] == 'm' or
-                    row['termination'] == 'e' or
-                    row['termination'] == 'r'):
+    if row['id'] != 'id' and \
+                    row['corrupt'] == '0' and \
+                    int(row['wrating']) >= settings['min-rating'] and \
+                    int(row['brating']) >= settings['min-rating'] and \
+                    row['termination'] in {'g', 'm', 'e', 'r'}:
+
         writer.writerow(dict(zip(
             output_fieldnames,
             (rid, row['id'], row['wrating'], row['brating'],
