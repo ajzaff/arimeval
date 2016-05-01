@@ -64,9 +64,9 @@ The proposed model is a 3-layer neural network with 384 inputs and a single outp
 	\newcommand{\nodetexty}[2]{$y_#2$}
 	\newcommand{\mynodetext}[2]{$\vdots$}
 	\setdefaultnodetext{\mynodetext}
-	\inputlayer[count=3, bias=true, title=Input\\layer, text=\mynodetext]
-	\hiddenlayer[count=3, bias=true, title=$tanh$\\conv layer, text=\mynodetext] \linklayers
-	\hiddenlayer[count=3, bias=true, title=$tanh$\\layer, text=\mynodetext] \linklayers
+	\inputlayer[count=2, bias=true, title=Input\\layer, text=\mynodetext]
+	\hiddenlayer[count=2, bias=true, title=$tanh$\\conv layer, text=\mynodetext] \linklayers
+	\hiddenlayer[count=2, bias=true, title=$tanh$\\layer, text=\mynodetext] \linklayers
 	\outputlayer[count=1, title=Rectified\\output, text=\nodetexty] \linklayers
 \end{neuralnetwork}
 \caption{A sample of the neural network architecture with included bias terms (top).  Not all terms are shown.}
@@ -156,6 +156,7 @@ We ran the optimal hyperparameters on the full dataset, training the network for
 
 In this paper, we examined a regression problem: learning a function to evaluate the winning chances in Arimaa positions.  We proposed a 3-layer convolutional neural network: one layer of convolution filters, one hidden layer, and a rectified output layer.  In the end, our model was able to predict winning chances within a squared error margin of $0.171$, and predicted the correct outcome of games $73.5\%$ of the time.  The predictions were made using positional features alone from a set of 46,210 expert Arimaa games.
 
+\clearpage
 \begin{thebibliography}{9}
 
 \bibitem{arimaa_com}
