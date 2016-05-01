@@ -47,7 +47,7 @@ Google DeepMind's recent victory of AlphaGo versus Lee Sedol has shown that game
 The success of CNN-Go, generally, can be attributed to the smooth arrangements of positions that are approximately continuous through and between games \cite{Oshri_Khandwala}.  In Go, only one piece is placed per turn.  Since pieces are not allowed to move, the inherent entropy of the game is lessened dispite a large branching factor.  Arimaa shares a weaker version of this property.  Although, pieces can move, each piece moves in the same way, namely one space at a time in cardinal directions.  We predict the resultant spacial relationships will be easier to encode than in chess, for instance.  For this reason, we expect that CNN-Arimaa will have similar success.
 
 \section{Data Set}
-Arimaa.com game room offers an archive of all games played on their servers \cite{arimaa_com}\cite{games}.  I process a subset of this data (minimum ELO rating 1800 and above) amounting to 46210 expert games.  From these games, I extracted a number of key positions (maximum of 160 plys beginning from the end of the game.)  This is a more-than-sufficient sample rate, since the average Arimaa game is only 100 plys.  This last processing step gave me the final dataset of 3,977,256 positions as datacases containing, in total, 1,527,266,304 features.  For each datacase, there are 384 features and 1 label corresponding to the backpropogated game result from the game which produced it.  Ties are not possible in Arimaa, so the only possible labels are ``will the side to move win?'' (1) or ``will the side to move lose?'' (0).  Only games that resulted in a meaningful win were used.
+Arimaa.com game room offers an archive of all games played on their servers \cite{arimaa_com}\cite{games}.  I process a subset of this data (minimum ELO rating 1800 and above) amounting to 46,210 expert games.  From these games, I extracted a number of key positions (maximum of 160 plys beginning from the end of the game.)  This is a more-than-sufficient sample rate, since the average Arimaa game is only 100 plys.  This last processing step gave me the final dataset of 3,977,256 positions as datacases containing, in total, 1,527,266,304 features.  For each datacase, there are 384 features and 1 label corresponding to the backpropogated game result from the game which produced it.  Ties are not possible in Arimaa, so the only possible labels are ``will the side to move win?'' (1) or ``will the side to move lose?'' (0).  Only games that resulted in a meaningful win were used.
 
 \subsection{Feature Encoding}
 After filtering the list of expert games, position data was obtained by taking the provided lists of moves, playing them out to the end, then popping off the last 160 plys and recording them.  Thus, the lists of moves are turned into  $8\times 8$ board states.  The resultant board data is split into 6 channels (one for each piece) producing $6\times 8\times 8$ \textit{bitboard} matrices.  We implement seperate channels because piece values are not continouosly comparable, and therefore cannot be represented on the same channel.  Pieces for the side to move use a 1, the opposing side uses -1, and empty squares are 0.  This can be viewed as a form of dimensionality reduction, since the same representation can predict a board of gold to move, or conversely, a board with silver to move, where all symmetries have been eliminated.
@@ -82,13 +82,13 @@ We cannot afford to do validation over all 3.9 million examples, therefore, we l
 
 \subsection{Training}
 
-The optimal hyperparameters found during validation are used to train a network on the full dataset.  The batch size is increased from 16 to 4096 to accomadate the larger number of instances.  We shuffle the full dataset before using it since the timeseries bias could negatively effect the learning rate.
+The optimal hyperparameters found during validation are used to train a network on the full dataset.  The batch size is increased from 16 to 4096 to accommodate the larger number of instances.  We shuffle the full dataset before using it since the timeseries bias could negatively affect the learning rate.
 
 \section{Experiments}
 
 \subsection{Cross-Validated Grid Search}
 
-30000 shuffled examples are selected from a larger pool of 1.8 million examples to prevent overfitting.  We find optimal hyperparameters using a 2-fold cross-validated grid-search over these micro-datasets.  Batch size is set to 1000 to expedite the search; MSE loss is used.  We expect optimal parameters to fit the larger dataset, since they were tested on samples from the target distribution.
+30,000 shuffled examples are selected from a larger pool of 1.8 million examples to prevent overfitting.  We find optimal hyperparameters using a 2-fold cross-validated grid-search over these micro-datasets.  Batch size is set to 1000 to expedite the search; MSE loss is used.  We expect optimal parameters to fit the larger dataset, since they were tested on samples from the target distribution.
 
 \begin{figure}[ht]
 \centering
@@ -123,20 +123,20 @@ Initially, we experiment with $6\times 6$ kernels to narrow the space of paramet
 .0833 & .1917 & .6667 & .8939 & .005 & None & nesterov & $4\times 4$ \\
 \hline
 \end{tabular}
-\caption{Our results show a clear preference for Nesterov momentum (over SGD\footnote{stochastic gradient descent}), which dominated the top spots in our experiments.  Regularization has had some positive impact.  This is consistant with Oshri and Khandwala, who posited that a small amount of regularization might be applicable to their chess network model \cite{Oshri_Khandwala}. Our results show L1 regularizer improves $R^2$ and MSE.  Dropout was detrimental to model fitting.  This is consistant with Oshri and Khandwala, who claim the image was small enough that all features must be interacting with eachother \cite{Oshri_Khandwala}. \label{fig:paramtable}}
+\caption{Our results show a clear preference for Nesterov momentum (over SGD\footnote{stochastic gradient descent}), which dominated the top spots in our experiments.  Regularization has had some positive impact.  This is consistant with Oshri and Khandwala, who posited that a small amount of regularization might be applicable to their chess network model \cite{Oshri_Khandwala}. Our results show L1 regularizer improves $R^2$ and MSE.  Dropout was detrimental to model fitting.  This is consistant with Oshri and Khandwala, who claim the image was small enough that all features must be interacting with each other \cite{Oshri_Khandwala}. \label{fig:paramtable}}
 \end{figure}
 
 \section{Results}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[scale=.5]{assets/figure-hplot.png}
-\caption{The model's regression error is the lower line shown in blue.  $0/1$-classification error is also included above it (red).  This ``height plot'' elucidates our models predictive power at varying heights in the game tree.  In the end game ($h=0$) our model has MSE $.105$ and classification error $15\%$.  MSE seems to rise up through middlegame, with a peak at the opening (MSE=$.22\pm .02$), while classification error plateus and holds at the point of maximum entropy near the middlegame (error=$32.5\pm 3 \%$). \label{fig:hplot}}
+\caption{The model's regression error is the lower line shown in blue.  $0/1$-classification error is also included above it (red).  This ``height plot'' elucidates our model's predictive power at varying heights in the game tree.  In the end game ($h=0$) our model has MSE $.105$ and classification error $15\%$.  MSE seems to rise up through middlegame, with a peak at the opening (MSE=$.22\pm .02$), while classification error plateus and holds at the point of maximum entropy near the middlegame (error=$32.5\pm 3 \%$). \label{fig:hplot}}
 \end{figure}
 
 We ran the optimal hyperparameters on the full dataset, training the network for 30 iterations.  The batch processing size was increased to 4096 to accomadate the large number of examples.  We set aside $1/5$ of the data for held-out test data; we could not to do full cross-validation on the model since it already took over an hour to train.  After 30 iterations, the final result for our model was achieved: MSE=$.171$, with a classification accuracy of $73.5\%$ predicting the outcome of games from positional features alone.  Figure \ref{fig:hplot} shows a detailed plot of our results against the original set of games.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[scale=.5]{assets/figure-filters.png}
 \caption{Colorized $4\times 4$ convolutional filters as learnt by our model.  Each row corresponds to a distinct channel, one for each piece.  From top to bottom: rabbit (white), cat (yellow), dog (pink), horse (red), camel (cyan), and elephant (green). }
@@ -145,7 +145,7 @@ We ran the optimal hyperparameters on the full dataset, training the network for
 \section{Discussion}
 
 \begin{itemize}
-\item \textbf{Reinforcement Learning} Self play can be implemented as a form of reinforcement learning.  Using one or more strong base models, we pit pairs of models against oneanother in rounds of rapid Monte Carlo style games.  Self-play would be crutial in developing an actual top-level Arimaa bot.
+\item \textbf{Reinforcement Learning} Self play can be implemented as a form of reinforcement learning.  Using one or more strong base models, we pit pairs of models against one another in rounds of rapid Monte Carlo style games.  Self-play would be crucial in developing an actual top-level Arimaa bot.
 
 \item \textbf{Pipeline Improvements} Each stage of the pipeline to took a while to run:  1-2 hours to prepare data, 1 hour to select hyperparameters, and 1 hour to train.  All of these stages being embarressingly parallel, Spark \cite{spark} and hosted environments such as AWS EC2 could have helped expedited the pipeline enormously.
 
@@ -154,7 +154,7 @@ We ran the optimal hyperparameters on the full dataset, training the network for
 
 \section{Conclusion}
 
-In this paper, we examined a regression problem: learning a function to evaluate the winning chances in Arimaa positions.  We proposed a 3-layer convolutional neural network: one layer of convolution filters, one hidden layer, and a rectified output layer.  In the end, our model was able to predict winning chances with an squared error margin of $0.171$, and predicted the correct outcome of games $73.5\%$ of the time.  The predictions were made using positional features alone from a set of 46210 expert Arimaa games.
+In this paper, we examined a regression problem: learning a function to evaluate the winning chances in Arimaa positions.  We proposed a 3-layer convolutional neural network: one layer of convolution filters, one hidden layer, and a rectified output layer.  In the end, our model was able to predict winning chances within a squared error margin of $0.171$, and predicted the correct outcome of games $73.5\%$ of the time.  The predictions were made using positional features alone from a set of 46,210 expert Arimaa games.
 
 \begin{thebibliography}{9}
 
