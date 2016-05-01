@@ -1,12 +1,14 @@
 \documentclass{article}
 \usepackage{nips15submit_e,times}
 \usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{neuralnetwork}
 
-\title{Convolutional Neural Network For\\Static Evaluation in Arimaa}
+\title{Learning To Evaluate Arimaa Positions}
 
 \author{
 Alan J. Zaffetti\thanks{B.S. Computer Science} \\
-Department of Computer Science\\
+College of Information and Computer Sciences\\
 University of Massachusetts Amherst\\
 Amherst, MA 01003 \\
 \texttt{azaffett@umass.edu} \\
@@ -15,37 +17,148 @@ Amherst, MA 01003 \\
 \begin{document}
 \maketitle
 \begin{abstract}
-Arimaa is an abstract strategy game with a small, but loyal community.  Invented in 2002 by Omar Syed, the chess variant was designed to be intuitive for humans to learn, but difficult for computers to beat.  Syed challenged the AI community to develop a World Champion program and further the state of knoweldge about the game.  The challenge has been met and finally claimed by David Wu in April of 2015.  This paper increments on Wu's results by substituting his hand-tuned evaluation function for a convolutional neural network, learned from a collection of expert games.  Given positional features as input, the network will output the goodness score for one side.  It hopes to serve as a proof-of-concept and eventually further the state-of-art in Arimaa playing strength.
+Arimaa is a two-player abstract strategy game.  A chess variant, it was designed to be computer-resistant, since each position has a combinatorial number of moves.  Last year, however, David Wu showed that this computer-resistance was limited, developing a bot which beat top human players \cite{wu}.  In this paper, we examine a regression problem: learning a function to evaluate the winning chances in Arimaa positions.  To solve it, we propose a 3-layer convolutional neural network.  If successful, the model will serve as a useful heuristic to further playing strength.
 \end{abstract}
 
-\section{Data Sets}
+\section{Introduction}
 
-Arimaa.com game room \cite{arimaa_com} offers an archive \cite{games} of all games played on their servers.  These include casual, rated, and tornament games for all users mothly from 2002-2016.  I will use a subset of this data (minimum ELO rating 1800 and above) amounting to tens of thousands of game positions.  Arimaa.com also offers a dataset of `win in two move' puzzles \cite{puzzles}, and I propose a method for extracting more.  Data is in tab-delineated CSV, and game data is in move list form.  These games require preprocessing to extract the key positions from them.
+\subsection{On Arimaa}
 
-\section{Problem}
-
-Can we train a convolutional neural network to learn a function $f: \mathbb{R}^D\rightarrow \mathbb{R}$ to determine the goodness of a position for one side? How reliably do CNN evaluators determine the outcome of an Arimaa game?  These are the machine learning inquiries I plan to address.
-
-\section{Methods}
-
-The data will need to be preprocessed, since it is stored as a list of moves.  I will do this by extracting key positions in FEN notation \cite{fen}, as the sole features, and game result (0 or 1) as the target.
-
-\begin{figure}[h]
-\begin{center}
-\texttt{RRRDDRRR/RHCEMCHR/8/8/8/8/rhcmechr/rrrddrrr 2g}
-\end{center}
-\caption{An example FEN position string.}
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=.4]{assets/example.png}
+\caption{The players begin a game by setting up their pieces however they choose on their home rows.  There is no standard initial configuration for Arimaa.}
 \end{figure}
 
-Parallel data preprocessing will be implemented via Apache Spark \cite{spark}.  I will then fit a multi-layer convolutional nerual network regressor in Python, making the proper transformations into the desired input shape.  I will be using the software libraries Theano \cite{theano}, and nolearn.lasagne \cite{nolearn_lasagne} to design and train the network.
+Arimaa was developed in 2002 by Omar Syed, who was inspired by the 1997 IBM Deep Blue match versus Gary Kasparov to create a more computer-resistant chess variant.  The game is computer-resistant because it has a combinatorial number of moves in every position.  Players can make between 1-4 steps per turn, and may spend those steps on any combination of legal pieces.  After eliminating steps that result in the same position, on average there are about 17,000 legal moves per turn \cite{haskin}.  Compare this to Go, which has, on average, 250.  Dispite this major hinderance to search, intrisic properties of the game, and the addition of sophisticated heuristics borrowed from the computer chess literature, and tuned over many years, have helped reduce the effective branching factor thousands of times \cite{wu}.
 
-\section{Experiments}
+\subsection{On CNN}
 
-I will evaluate my model using $k$-fold cross-validation of mean accuracy values.  I will break down accuracy results  into move-by-move statistics.  That is, I will plot my model on sample positions achieved after $k$ moves, $k+1$ moves, ($k+2$ moves, etc).  This will allow me to vet and visualize my model for stage-wise performance (i.e. opening, middle-game, end-game).  I will produce a plot showing how well my model can predict the `win in $2$,' and `win in $k$' puzzles.
+Convolutional neural networks (CNN) have seen great success in late applications to machine learning, particularly computer vision, and image processing tasks.  They are characterized by layers of learnable filters (or kernels), which are convolved across the input image (computing a dot product between the two).  The result are filters which activate when they see some specific type of feature.  
 
 \section{Related Work}
 
-Related work includes David Wu's original paper \cite{wu}, which I cite for the description of Arimaa, and his work developing a World Champion Arimaa program.  I will compare my results to an earlier thesis paper by Hrebejk \cite{Hrebejk} on evaluator learning in Arimaa as a baseline for comparison.  Oshri, Khandwala \cite{Oshri_Khandwala} is also relevant for its board to input image transformation for the CNN.
+Oshri, Khandwala \cite{Oshri_Khandwala} is relevant for its board to input image transformation for the CNN.
+
+Related work includes David Wu's original paper \cite{wu}, which I cite for the description of Arimaa, and his work developing a World Champion Arimaa program.
+
+Google DeepMind's recent victory of AlphaGo versus Lee Sedol has shown that games are still not exempt from this heyday.  Given appropriate architectures, valid datasets, and increasingly massive computational resources, these approaches challenge human's experienced-based reasoning, especially under the closed conditions of a game board.
+
+The success of CNN-Go, generally, can be attributed to the smooth arrangements of positions that are approximately continuous through and between games \cite{Oshri_Khandwala}.  In Go, only one piece is placed per turn.  Since pieces are not allowed to move, the inherent entropy of the game is lessened dispite a large branching factor.  Arimaa shares a weaker version of this property.  Although, pieces can move, each piece moves in the same way, namely one space at a time in cardinal directions.  We predict the resultant spacial relationships will be easier to encode than in chess, for instance.  For this reason, we expect that CNN-Arimaa will have similar success.
+
+\section{Data Set}
+Arimaa.com game room offers an archive of all games played on their servers \cite{arimaa_com}\cite{games}.  I process a subset of this data (minimum ELO rating 1800 and above) amounting to 46210 expert games.  From these games, I extracted a number of key positions (maximum of 160 plys beginning from the end of the game.)  This is a more-than-sufficient sample rate, since the average Arimaa game is only 100 plys.  This last processing step gave me the final dataset of 3,977,256 positions as datacases containing, in total, 1,527,266,304 features.  For each datacase, there are 384 features and 1 label corresponding to the backpropogated game result from the game which produced it.  Ties are not possible in Arimaa, so the only possible labels are ``will the side to move win?'' (1) or ``will the side to move lose?'' (0).  Only games that resulted in a meaningful win were used.
+
+\subsection{Feature Encoding}
+After filtering the list of expert games, position data was obtained by taking the provided lists of moves, playing them out to the end, then popping off the last 160 plys and recording them.  Thus, the lists of moves are turned into  $8\times 8$ board states.  The resultant board data is split into 6 channels (one for each piece) producing $6\times 8\times 8$ \textit{bitboard} matrices.  We implement seperate channels because piece values are not continouosly comparable, and therefore cannot be represented on the same channel.  Pieces for the side to move use a 1, the opposing side uses -1, and empty squares are 0.  This can be viewed as a form of dimensionality reduction, since the same representation can predict a board of gold to move, or conversely, a board with silver to move, where all symmetries have been eliminated.
+
+\section{Proposed Solution}
+
+\subsection{CNN Architecture}
+
+The proposed model is a 3-layer neural network with 384 inputs and a single output.  The proposed network architecture is one level of convolution, a single hidden layer, and a rectified output layer.  Initially, the convolutional layer uses 384 square $3\times3$ kernels.  The inner hidden layer is comprised of 384 units.  Both the convolutional layer and hidden layers use $tanh$ as their activation functions.  During experiments, we found this function worked best.  The output layer uses a rectified linear activation function to fit the regression problem.
+
+\begin{figure}[ht]
+\centering
+\begin{neuralnetwork}[height=4]
+	\newcommand{\nodetextclear}[2]{}
+	\newcommand{\nodetextx}[2]{$X_#2$}
+	\newcommand{\nodetexty}[2]{$y_#2$}
+	\newcommand{\mynodetext}[2]{$\vdots$}
+	\setdefaultnodetext{\mynodetext}
+	\inputlayer[count=3, bias=true, title=Input\\layer, text=\mynodetext]
+	\hiddenlayer[count=3, bias=true, title=$tanh$\\conv layer, text=\mynodetext] \linklayers
+	\hiddenlayer[count=3, bias=true, title=$tanh$\\layer, text=\mynodetext] \linklayers
+	\outputlayer[count=1, title=Rectified\\output, text=\nodetexty] \linklayers
+\end{neuralnetwork}
+\caption{A sample of the neural network architecture with included bias terms (top).  Not all terms are shown.}
+\end{figure}
+
+We chose to keep the CNN architecture fixed and relatively small, because, as we found, training and validating larger networks is increasingly impossible, save for increasing the batch size.  With 48 learnable filters, and 384 hidden units, we claim our proposed network has sufficient capacity for our purposes that we do not consider deeper architectures.
+
+We used the scikit-neuralnetwork (sknn) package for training the CNN, which is a friendly wrapper over pylearn2, which itself is built over Theano \cite{theano}.
+
+\subsection{Validation}
+
+We cannot afford to do validation over all 3.9 million examples, therefore, we limited our validation experiments down to a smaller number of examples for each parameter setting in the joint parameter space.  We experimented with different learning rules, regularizers, layer normalization methods, convolution kernel shapes, and dropout rates.  $K$-fold cross-validated grid-search is used to determine the effectiveness of the measures and which combination worked best.
+
+\subsection{Training}
+
+The optimal hyperparameters found during validation are used to train a network on the full dataset.  The batch size is increased from 16 to 4096 to accomadate the larger number of instances.  We shuffle the full dataset before using it since the timeseries bias could negatively effect the learning rate.
+
+\section{Experiments}
+
+\subsection{Cross-Validated Grid Search}
+
+30000 shuffled examples are selected from a larger pool of 1.8 million examples to prevent overfitting.  We find optimal hyperparameters using a 2-fold cross-validated grid-search over these micro-datasets.  Batch size is set to 1000 to expedite the search; MSE loss is used.  We expect optimal parameters to fit the larger dataset, since they were tested on samples from the target distribution.
+
+\begin{figure}[ht]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Tested Values} \\
+\hline
+\textit{Dropout Rate} &  .5, .25, .1, .05, .01, .005, None \\
+\textit{Regularization} &  L1, L2, None \\
+\textit{Learning Rule} & sgd, rmsprop, momentum, nesterov \\
+\textit{Kernel Shape} & $(2\times 2)$, $(3\times 3)$, $(4\times 4)$, $(5\times 5)$, $(6\times 6)$, $(1\times 4)$, $(1\times 8)$, $(3\times 1)$, $(6\times 1)$ \\
+\hline
+\end{tabular}
+\caption{The space of parameters we cross-validated.}
+\end{figure}
+
+Initially, we experiment with $6\times 6$ kernels to narrow the space of parameters.  Our results for this stage were used to find our final optimal hyperparameters, which we present in Figure \ref{fig:paramtable}.
+
+\begin{figure}[ht]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{MSE} & \textbf{MAE} & \textbf{$R^2$} & \textbf{Acc\footnote{Accuracy was obtained by rounding $\textbf{y}^\prime$ to the nearest whole number.  When rounded, outputs can be interpreted as a binary classification.}} & \textbf{Dropout} & \textbf{Regularizer} & \textbf{Learning Rule} & \textbf{Kernel Shape} \\
+\hline
+.0803 & .1870 & .6787 & .899 & None & L1 & nesterov & $4\times 4$ \\
+.0804 & .1868 & .6785 & .899 & None & L2 & nesterov & $4\times 4$ \\
+.0804 & .1867 & .6785 & .8991 & None & None & nesterov & $4\times 4$ \\
+.0833 & .1917 & .6670 & .8938 & .01 & L1 & nesterov & $4\times 4$ \\
+.0833 & .1918 & .6669 & .8939 & .005 & L1 & nesterov & $4\times 4$ \\
+.0833 & .1916 & .6668 & .8935 & .01 & None & nesterov & $4\times 4$ \\
+.0833 & .1917 & .6667 & .8939 & .005 & L2 & nesterov & $4\times 4$ \\
+.0833 & .1917 & .6667 & .8939 & .005 & None & nesterov & $4\times 4$ \\
+\hline
+\end{tabular}
+\caption{Our results show a clear preference for Nesterov momentum (over SGD\footnote{stochastic gradient descent}), which dominated the top spots in our experiments.  Regularization has had some positive impact.  This is consistant with Oshri and Khandwala, who posited that a small amount of regularization might be applicable to their chess network model \cite{Oshri_Khandwala}. Our results show L1 regularizer improves $R^2$ and MSE.  Dropout was detrimental to model fitting.  This is consistant with Oshri and Khandwala, who claim the image was small enough that all features must be interacting with eachother \cite{Oshri_Khandwala}. \label{fig:paramtable}}
+\end{figure}
+
+\section{Results}
+
+We ran the optimal hyperparameters on the full dataset, training the network for 30 iterations.  The batch processing size was increased to 4096 to accomadate the large number of examples.  We set aside $1/5$ of the data for held-out test data; we could not to do full cross-validation on the model since it already took over an hour to train.  After 30 iterations, the final result for our model was achieved: MSE=$.171$, with a classification accuracy of $73.5\%$ predicting the outcome of games from positional features alone.  Figure \ref{fig:hplot} shows a detailed plot of our results against the original set of games.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=.5]{assets/figure-hplot.png}
+\caption{The model's regression error is shown in blue.  $0/1$-classification error is also included (red).  This ``height plot'' elucidates our models predictive power at varying heights in the game tree.  In the end game ($h=0$) our model has MSE $.105$ and classification error $11.5\%$.  MSE seems to rise up through middlegame, with a peak at the opening (MSE=$.33\pm .05$), while classification error plateus and holds at the point of maximum entropy near the middlegame (error=$32.5\pm 3 \%$). \label{fig:hplot}}
+\end{figure}
+
+\subsection{Convolutional Filters}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=.6]{assets/figure-filters.png}
+\caption{Colorized $4\times 4$ convolutional filters as learned by our model.  Each row corresponds to a distinct channel, one for each piece.  They are as follows: rabbit (white), cat (yellow), dog (pink), horse (red), camel (cyan), and elephant (green). }
+\end{figure}
+
+\section{Discussion}
+
+If given time to revisit some aspects of this project, more than a few things would come to mind: improving methods, tweaking data collection, expanding the scope of the project in various ways, etc.  Here we devote bullet points to some of the more technical considerations:
+
+\begin{itemize}
+\item \textbf{Reinforcement Learning} Given more time, we would have definitely wanted to explore the area of using self play as a form of reinforcement learning.  Given a set of strong base models, we implement self-play by pitting pairs of models against oneanother in rounds of rapid Monte Carlo style games.  Self-play would be crutial in developing an actual top-level Arimaa bot.
+
+\item \textbf{Reevaluate `Meaningful Games'} Included in our dataset are games that ended in resignation (one player gives up).  We conjecture that including these games has increased the error near the tail-end of our predictions in Figure \ref{fig:hplot}, because an early resignation does not always look like a goal.  Given more time, we would purge these data-cases and attempt to re-train.
+\end{itemize}
+
+\section{Conclusion}
+
+In this paper, we examined a regression problem: learning a function to evaluate the winning chances in Arimaa positions.  We proposed a 3-layer convolutional neural network: one layer of convolution filters, one hidden layer, and a rectified output layer.  In the end, our model was able to predict winning chances with an squared error margin of $0.171$, and predicted the correct outcome of games $73.5\%$ of the time.  The predictions were made using positional features alone from a set of 46210 expert Arimaa games.
 
 \begin{thebibliography}{9}
 
@@ -53,6 +166,9 @@ Related work includes David Wu's original paper \cite{wu}, which I cite for the 
 Arimaa Gameroom;
 \textit{http://arimaa.com};
 2002-2016.
+
+\bibitem{haskin}
+Haskin, B. (2006). A Look at the Arimaa Branching Factor. http://arimaa.janzert.com/bf study/. Accessed on 2015-07-12.
 
 \bibitem{games}
 Arimaa Games Archive;
