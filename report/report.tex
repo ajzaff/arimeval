@@ -38,9 +38,7 @@ Convolutional neural networks (CNN) have seen great success in late applications
 
 \section{Related Work}
 
-Oshri, Khandwala \cite{Oshri_Khandwala} is relevant for its board to input image transformation for the CNN.
-
-Related work includes David Wu's original paper \cite{wu}, which I cite for the description of Arimaa, and his work developing a World Champion Arimaa program.
+Oshri and Khandwala \cite{Oshri_Khandwala} is a relevant work on training a CNN to predict chess moves.  Although the problem domain differs, many of the methods and data structures used are relevant for us.  For example, we use their method for encoding the $8\times 8$ chess board in 6 channels.  We also take some of their findings on CNN architecture in to consideration.
 
 Google DeepMind's recent victory of AlphaGo versus Lee Sedol has shown that games are still not exempt from this heyday.  Given appropriate architectures, valid datasets, and increasingly massive computational resources, these approaches challenge human's experienced-based reasoning, especially under the closed conditions of a game board.
 
@@ -61,8 +59,6 @@ The proposed model is a 3-layer neural network with 384 inputs and a single outp
 \begin{figure}[ht]
 \centering
 \begin{neuralnetwork}[height=4]
-	\newcommand{\nodetextclear}[2]{}
-	\newcommand{\nodetextx}[2]{$X_#2$}
 	\newcommand{\nodetexty}[2]{$y_#2$}
 	\newcommand{\mynodetext}[2]{$\vdots$}
 	\setdefaultnodetext{\mynodetext}
@@ -135,25 +131,27 @@ We ran the optimal hyperparameters on the full dataset, training the network for
 \begin{figure}[ht]
 \centering
 \includegraphics[scale=.5]{assets/figure-hplot.png}
-\caption{The model's regression error is shown in blue.  $0/1$-classification error is also included (red).  This ``height plot'' elucidates our models predictive power at varying heights in the game tree.  In the end game ($h=0$) our model has MSE $.105$ and classification error $11.5\%$.  MSE seems to rise up through middlegame, with a peak at the opening (MSE=$.33\pm .05$), while classification error plateus and holds at the point of maximum entropy near the middlegame (error=$32.5\pm 3 \%$). \label{fig:hplot}}
+\caption{The model's regression error is the lower line shown in blue.  $0/1$-classification error is also included above it (red).  This ``height plot'' elucidates our models predictive power at varying heights in the game tree.  In the end game ($h=0$) our model has MSE $.105$ and classification error $15\%$.  MSE seems to rise up through middlegame, with a peak at the opening (MSE=$.22\pm .02$), while classification error plateus and holds at the point of maximum entropy near the middlegame (error=$32.5\pm 3 \%$). \label{fig:hplot}}
 \end{figure}
 
 \subsection{Convolutional Filters}
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=.6]{assets/figure-filters.png}
-\caption{Colorized $4\times 4$ convolutional filters as learned by our model.  Each row corresponds to a distinct channel, one for each piece.  They are as follows: rabbit (white), cat (yellow), dog (pink), horse (red), camel (cyan), and elephant (green). }
+\includegraphics[scale=.5]{assets/figure-filters.png}
+\caption{Colorized $4\times 4$ convolutional filters as learnt by our model.  Each row corresponds to a distinct channel, one for each piece.  From top to bottom: rabbit (white), cat (yellow), dog (pink), horse (red), camel (cyan), and elephant (green). }
 \end{figure}
 
 \section{Discussion}
 
-If given time to revisit some aspects of this project, more than a few things would come to mind: improving methods, tweaking data collection, expanding the scope of the project in various ways, etc.  Here we devote bullet points to some of the more technical considerations:
-
 \begin{itemize}
 \item \textbf{Reinforcement Learning} Given more time, we would have definitely wanted to explore the area of using self play as a form of reinforcement learning.  Given a set of strong base models, we implement self-play by pitting pairs of models against oneanother in rounds of rapid Monte Carlo style games.  Self-play would be crutial in developing an actual top-level Arimaa bot.
 
+\item \textbf{Pipeline Improvements} The data scale caused each stage of the pipeline to take a while to run:  1-2 hours to compile the data, 1 hour to select hyperparameters, and 1 hour train the model.  All of these stages are embarressingly parallel, but no effort was devoted to writing the parallel code.  Languages such as Spark \cite{spark} and hosted environments such as AWS EC2 could have helped expedited the pipeline enormously.
+
 \item \textbf{Reevaluate `Meaningful Games'} Included in our dataset are games that ended in resignation (one player gives up).  We conjecture that including these games has increased the error near the tail-end of our predictions in Figure \ref{fig:hplot}, because an early resignation does not always look like a goal.  Given more time, we would purge these data-cases and attempt to re-train.
+
+\item \textbf{More Robust Parameter Selection} Given more time, I would have liked to perform more hyperparameter selection using larger datasets, particularly for learning rates and pooling.
 \end{itemize}
 
 \section{Conclusion}
